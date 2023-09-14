@@ -20,5 +20,5 @@ Tests
 All the code is tested with the unittest module. The test for the classes are inthetest_models folder.
 
 Authors
-Purity Ngugi - Purengugi
-Nontsikelelo Hewu - ntshewu
+Purity Ngugi 
+Nontsikelelo Hewu 
