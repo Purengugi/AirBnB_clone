@@ -26,7 +26,7 @@ This first step consists of a custom command-line interface for data management,
 
 ## Tests
 
-All the code is tested with the unittest module. The test for the classes are in the `test_models folder`.
+All the code is tested with the unittest module. The test for the classes are in the `test_models` folder.
 
 ## Authors
 
