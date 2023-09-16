@@ -1,117 +1,120 @@
 #!/usr/bin/python3
 """
-Contains the TestUserDocs classes
+test_base
 """
 
-from datetime import datetime
-import inspect
-from models import user
-from models.base_model import BaseModel
-import pep8
 import unittest
-User = user.User
+import json
+from models.user import User
+from datetime import datetime
+import uuid
+import re
+import os
+import models
 
 
-class TestUserDocs(unittest.TestCase):
-    """Tests to check the documentation and style of User class"""
-    @classmethod
-    def setUpClass(cls):
-        """Set up for the doc tests"""
-        cls.user_f = inspect.getmembers(User, inspect.isfunction)
+class test_base(unittest.TestCase):
+    """class for testing the usee"""
 
-    def test_pep8_conformance_user(self):
-        """Test that models/user.py conforms to PEP8."""
-        pep8s = pep8.StyleGuide(quiet=True)
-        result = pep8s.check_files(['models/user.py'])
-        self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_pep8_conformance_test_user(self):
-        """Test that tests/test_models/test_user.py conforms to PEP8."""
-        pep8s = pep8.StyleGuide(quiet=True)
-        result = pep8s.check_files(['tests/test_models/test_user.py'])
-        self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_user_module_docstring(self):
-        """Test for the user.py module docstring"""
-        self.assertIsNot(user.__doc__, None,
-                         "user.py needs a docstring")
-        self.assertTrue(len(user.__doc__) >= 1,
-                        "user.py needs a docstring")
-
-    def test_user_class_docstring(self):
-        """Test for the City class docstring"""
-        self.assertIsNot(User.__doc__, None,
-                         "User class needs a docstring")
-        self.assertTrue(len(User.__doc__) >= 1,
-                        "User class needs a docstring")
-
-    def test_user_func_docstrings(self):
-        """Test for the presence of docstrings in User methods"""
-        for func in self.user_f:
-            self.assertIsNot(func[1].__doc__, None,
-                             "{:s} method needs a docstring".format(func[0]))
-            self.assertTrue(len(func[1].__doc__) >= 1,
-                            "{:s} method needs a docstring".format(func[0]))
-
-
-class TestUser(unittest.TestCase):
-    """Test the User class"""
-    def test_is_subclass(self):
-        """Test that User is a subclass of BaseModel"""
-        user = User()
-        self.assertIsInstance(user, BaseModel)
-        self.assertTrue(hasattr(user, "id"))
-        self.assertTrue(hasattr(user, "created_at"))
-        self.assertTrue(hasattr(user, "updated_at"))
-
-    def test_email_attr(self):
-        """Test that User has attr email, and it's an empty string"""
-        user = User()
-        self.assertTrue(hasattr(user, "email"))
-        self.assertEqual(user.email, "")
-
-    def test_password_attr(self):
-        """Test that User has attr password, and it's an empty string"""
-        user = User()
-        self.assertTrue(hasattr(user, "password"))
-        self.assertEqual(user.password, "")
-
-    def test_first_name_attr(self):
-        """Test that User has attr first_name, and it's an empty string"""
-        user = User()
-        self.assertTrue(hasattr(user, "first_name"))
-        self.assertEqual(user.first_name, "")
-
-    def test_last_name_attr(self):
-        """Test that User has attr last_name, and it's an empty string"""
-        user = User()
-        self.assertTrue(hasattr(user, "last_name"))
-        self.assertEqual(user.last_name, "")
-
-    def test_to_dict_creates_dict(self):
-        """test to_dict method creates a dictionary with proper attrs"""
-        u = User()
-        new_d = u.to_dict()
-        self.assertEqual(type(new_d), dict)
-        for attr in u.__dict__:
-            self.assertTrue(attr in new_d)
-            self.assertTrue("__class__" in new_d)
-
-    def test_to_dict_values(self):
-        """test that values in dict returned from to_dict are correct"""
-        t_format = "%Y-%m-%dT%H:%M:%S.%f"
-        u = User()
-        new_d = u.to_dict()
-        self.assertEqual(new_d["__class__"], "User")
-        self.assertEqual(type(new_d["created_at"]), str)
-        self.assertEqual(type(new_d["updated_at"]), str)
-        self.assertEqual(new_d["created_at"], u.created_at.strftime(t_format))
-        self.assertEqual(new_d["updated_at"], u.updated_at.strftime(t_format))
+    def test_inist(self):
+        """testing instances
+        email: string - empty string
+        password: string - empty string
+        first_name: string - empty string
+        last_name: string - empty string"""
+        my_model = User()
+        self.assertEqual(type(my_model), User)
+        d = datetime.now().replace(microsecond=0)
+        self.assertEqual(my_model.created_at.replace(microsecond=0), d)
+        self.assertEqual(my_model.updated_at.replace(microsecond=0), d)
+        self.assertEqual(my_model.first_name, "")
+        self.assertEqual(my_model.last_name, "")
+        self.assertEqual(my_model.password, "")
+        self.assertEqual(my_model.email, "")
+        self.assertTrue(type(my_model.id) is str)
+        my_model.first_name = "Betty"
+        my_model.last_name = "Bar"
+        my_model.email = "airbnb@mail.com"
+        my_model.password = "root"
+        self.assertEqual(my_model.first_name, "Betty")
+        self.assertEqual(my_model.last_name, "Bar")
+        self.assertEqual(my_model.email, "airbnb@mail.com")
+        self.assertEqual(my_model.password, "root")
 
     def test_str(self):
-        """test that the str method has the correct output"""
-        user = User()
-        string = "[User] ({}) {}".format(user.id, user.__dict__)
-        self.assertEqual(string, str(user))
+        """should print: [<class name>] (<self.id>) <self.__dict__>"""
+        my_model = User()
+        rep = str(my_model)
+        class_name = re.search("\\[.*\\]", rep).group(0)
+        self_id = re.search("\\(.{36}\\)", rep).group(0)
+        self_dict = re.search("\\{.*\\}", rep).group(0)
+        self.assertEqual(class_name, "[User]")
+        self.assertTrue(len(self_id) == 38)
+        inst_dict = my_model.__dict__
+        self.assertEqual(str(inst_dict), self_dict)
+
+    def test_str_no_empty(self):
+        """should print: [<class name>] (<self.id>) <self.__dict__>"""
+        my_model = User()
+        my_model.first_name = "Betty"
+        my_model.last_name = "Bar"
+        my_model.email = "airbnb@mail.com"
+        my_model.password = "root"
+        rep = str(my_model)
+        class_name = re.search("\\[.*\\]", rep).group(0)
+        self_id = re.search("\\(.{36}\\)", rep).group(0)
+        self_dict = re.search("\\{.*\\}", rep).group(0)
+        self.assertEqual(class_name, "[User]")
+        self.assertTrue(len(self_id) == 38)
+        inst_dict = my_model.__dict__
+        self.assertEqual(str(inst_dict), self_dict)
+
+    def test_save(self):
+        """check if updated at changes"""
+        my_model = User()
+        updated = my_model.updated_at
+        my_model.save()
+        self.assertNotEqual(updated, my_model.updated_at)
+
+    def test_save_not(self):
+        """check if updated doesn't change"""
+        my_model = User()
+        updated = my_model.updated_at
+        my_model.email = "hi@hi"
+        self.assertEqual(updated, my_model.updated_at)
+
+    def test_to_dict(self):
+        """check dict"""
+        my_model = User()
+        my_model_json = my_model.__dict__.copy()
+        my_model_json["__class__"] = "User"
+        my_model_json["created_at"] = my_model.created_at.isoformat()
+        my_model_json["updated_at"] = my_model.updated_at.isoformat()
+        from_js_dict = my_model.to_dict()
+        self.assertDictEqual(my_model_json, from_js_dict)
+
+    def test_kwargs(self):
+        """test for kwargs"""
+        my_model = User()
+        my_model_json = my_model.__dict__.copy()
+        my_model_json["created_at"] = my_model.created_at.isoformat()
+        my_model_json["updated_at"] = my_model.updated_at.isoformat()
+        my_new_model = User(**my_model_json)
+        self.assertTrue(type(my_new_model.id) is str)
+        self.assertEqual(my_model.id, my_new_model.id)
+        self.assertEqual(type(my_new_model), User)
+        self.assertEqual(my_model.created_at, my_new_model.created_at)
+        self.assertEqual(my_model.updated_at, my_new_model.updated_at)
+        self.assertTrue(my_model is not my_new_model)
+
+    def tearDown(self):
+        """deallocating resources"""
+        models.storage._FileStorage__objects = {}
+        try:
+            os.remove("file.json")
+        except Exception:
+            pass
+
+
+if __name__ == '__main__':
+    unittest.main()
