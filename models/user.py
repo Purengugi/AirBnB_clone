@@ -1,17 +1,21 @@
 #!/usr/bin/python3
-"""Defines the Userclass."""
+# from uuid import uuid4
+# from datetime import datetime
+# import models
+
 from models.base_model import BaseModel
+
+"""
+User Module
+Defines a user class with attributes which includes email,
+password, first_name, and last_name
+"""
 
 
 class User(BaseModel):
-    """Represent a User.
-    Attributes:
-        email (str): The email of the user.
-        password (str): The password of the user.
-        first_name (str): The first name of the user.
-        last_name (str): The last name of the user.
     """
-
+    Class user
+    """
     email = ""
     password = ""
     first_name = ""
